@@ -63,7 +63,7 @@
       //3.发送ajax请求
       //4.登录成功跳转到index页面
       $('.input_sub').on('click', function (e) {
-        e.preventDefault();
+        e.preventDefault();//阻止默认行为
         var username = $('.input_txt').val();
         var password = $('.input_pass').val();
         //非空判断
@@ -81,7 +81,9 @@
             password
           },
           success: function (backdata) {
-            $('.modal-body>p').text(backdata.msg);//提示
+            //把token存储到localStorage
+            localStorage.setItem('token',backdata.token);
+            $('.modal-body>p').text(backdata.msg);//提示信息
             $('#myModal').modal(); //弹出提示
             if (backdata.code == 200) {
               //此事件，当模态框被隐藏之后触发

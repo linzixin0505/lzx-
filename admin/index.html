@@ -20,7 +20,7 @@
         <a href="#" class="logo"><img src="images/logo02.png" alt="logo"></a>
         <div class="user_info">
             <img src="images/2.jpg" alt="person">
-            <span>欢迎&nbsp;&nbsp;李思思</span>
+            <span>欢迎&nbsp;&nbsp;<i style="font-style: normal;">用户名</i></span>
             <b>管理员</b>
         </div>
         <!-- 左侧导航栏 -->
@@ -54,5 +54,26 @@
 
         </div>
     </div>
+    <script>
+        //入口函数
+        $(function(){
+            //1.进入页面，发送ajax请求
+            //2.获取用户信息
+            $.ajax({
+                type:'get',
+                url:'http://localhost:8080/api/v1/admin/user/info',
+                headers:{
+                    Authorization:localStorage.getItem('token') //获取localStorage里的token,设置给请求头
+                },
+                success:function(backdata){
+                    console.log(backdata);
+                    //将用户信息显示到对应位置
+                    $('.user_info i').text(backdata.data.nickname);
+                    $('.user_info>img').attr('src',backdata.data.userPic);
+                    $('.user_center_link>img').attr('src',backdata.data.userPic);
+                }
+            })
+        })
+    </script>
 </body>
 </html>
