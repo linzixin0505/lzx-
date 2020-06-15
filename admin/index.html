@@ -62,15 +62,24 @@
             $.ajax({
                 type:'get',
                 url:'http://localhost:8080/api/v1/admin/user/info',
-                headers:{
-                    Authorization:localStorage.getItem('token') //获取localStorage里的token,设置给请求头
-                },
+                // headers:{
+                //     Authorization:localStorage.getItem('token') //获取localStorage里的token,设置给请求头
+                // },
                 success:function(backdata){
                     console.log(backdata);
                     //将用户信息显示到对应位置
                     $('.user_info i').text(backdata.data.nickname);
                     $('.user_info>img').attr('src',backdata.data.userPic);
                     $('.user_center_link>img').attr('src',backdata.data.userPic);
+                }
+            })
+
+            //退出登录
+            $('.logout').on('click',function(){
+                if(confirm('你确定要退出吗？')){
+                    //删除localStorage里的token
+                    localStorage.removeItem('token');
+                    location.href = './login.html';
                 }
             })
         })
