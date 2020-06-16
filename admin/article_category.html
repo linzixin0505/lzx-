@@ -12,8 +12,6 @@
     <link rel="stylesheet" href="css/main.css">
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
-    <!-- 引入模板引擎js文件 -->
-    <script src="./libs/template-web.js"></script>
 </head>
 
 <body>
@@ -31,19 +29,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <!-- tbody内容使用模板引擎 -->
+                    <!-- <tr>
                         <td>奇趣事</td>
                         <td>funny</td>
                         <td class="text-center">
-                            <a href="javascript:void(0)" data-toggle="modal" class=" btn btn-info btn-xs">编辑</a>
-                            <a href="javascript:void(0)" class="btn btn-danger btn-xs">删除</a>
+                            <a href="#" data-toggle="modal" class=" btn btn-info btn-xs">编辑</a>
+                            <a href="#" class="btn btn-danger btn-xs">删除</a>
                         </td>
-                    </tr>
+                    </tr> -->
                 </tbody>
                 <tfoot>
                     <tr>
                         <td colspan="3" class="text-center">
-                            <a href="javascript:void(0)" class="btn btn-success" id="xinzengfenlei" data-toggle="modal"
+                            <a href="#" class="btn btn-success" id="xinzengfenlei" data-toggle="modal"
                                 data-target="#myModal">新增分类</a>
                         </td>
                     </tr>
@@ -51,5 +50,131 @@
             </table>
         </div>
     </div>
+    <!-- bootstrap模态框 -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">默认提示标题</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="recipient-name" class="control-label">分类名称</label>
+                            <input type="text" class="form-control" id="recipient-name">
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="control-label">分类别名</label>
+                            <input class="form-control" id="message-text"></input>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="addOrEdit">默认关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 引入模板引擎js文件 -->
+    <script src="./libs/template-web.js"></script>
+    <!-- 准备一个文章类别模板 -->
+    <script type="text/html" id="temp">
+        {{each data v}}
+        <tr>
+            <td>{{v.name}}</td>
+            <td>{{v.slug}}</td>
+            <td class="text-center">
+                <a href="#" data-id="{{v.id}}" data-toggle="modal" data-target="#myModal"
+                    class=" btn btn-info btn-xs">编辑</a>
+                <a href="#" data-id="{{v.id}}" class="btn btn-danger btn-xs">删除</a>
+            </td>
+        </tr>
+        {{/each}}
+    </script>
+    <script src="./libs/http.js"></script>
+    <script>
+        //入口函数
+        $(function () {
+            //1.文章类别管理页面
+            //2.发送ajax请求,获取所有文章类别
+            //3.使用模板引擎,渲染到页面
+            function getData() {
+                $.ajax({
+                    type: 'get',
+                    url: BigNew.category_list,
+                    success: function (backdata) {
+                        if (backdata.code == 200) {
+                            //使用模板引擎渲染数据
+                            var reshtml = template('temp', backdata);
+                            $('tbody').html(reshtml);
+                        }
+                    }
+                })
+            }
+            getData();
+
+            //4.点击新增 或 编辑 弹出模态框 
+            //通过给a标签添加data-toggle="modal" data-target="#myModal" 这俩个属性,来实现,bootstrap自带的
+            //也可以用js,像前面的一样
+            //判断弹出的模态框是新增还是编辑
+            //show.bs.modal  模态框弹出之前立即触发
+            // 如果是通过点击某个作为触发器的元素，则此元素可以通过事件的 relatedTarget 属性进行访问
+            $('#myModal').on('show.bs.modal', function (e) {
+                if (e.relatedTarget === $('#xinzengfenlei')[
+                    0]) { //e.relatedTarget是触发的元素 bootstrap里的模态框事件
+                    //是新增
+                    $('#myModalLabel').text('新增分类')
+                    $('#addOrEdit').text('新增').addClass('btn-success').removeClass('btn-info')
+                } else {
+                    //是编辑
+                    $('#myModalLabel').text('编辑分类')
+                    $('#addOrEdit').text('编辑').addClass('btn-info').removeClass('btn-success')
+                }
+            })
+
+            //5.判断按钮是新增还是编辑
+            $('#addOrEdit').on('click', function () {
+                // if($(this).text() == '新增') 方式一
+                if ($(this).hasClass('btn-success')) { //方式二
+                    //新增
+                    //获取输入框内容 发送ajax请求
+                    var name = $("#recipient-name").val().trim();
+                    var slug = $("#message-text").val().trim();;
+                    if(name == '' || slug == ''){
+                        alert('内容不能有空！');
+                        return;
+                    }
+                    //发送ajax请求
+                    $.ajax({
+                        type:'post',
+                        url:BigNew.category_add,
+                        data:{
+                            name,
+                            slug
+                        },
+                        success:function(backdata){
+                            if(backdata.code == 201){
+                                alert('新增成功');
+                                //重新发送ajax请求,更新文章类别
+                                getData();
+                                //清空输入框数据
+                                $("#recipient-name").val('');
+                                $("#message-text").val('');
+                                //hide方法 隐藏模态框
+                                $('#myModal').modal('hide')
+                            }
+                        }
+                    })
+                } else {
+                    //编辑
+
+                }
+            })
+        })
+    </script>
+</body>
 
 </html>
