@@ -228,24 +228,25 @@
             //6.删除分类
             //给删除按钮注册点击事件 委托注册
             $('tbody').on('click', '.btn-delete', function () {
-                //获取当前点击的元素的id
-                var id = $(this).attr('data-id');
-                console.log(id);
-                //发送ajax请求,删除数据
-                $.ajax({
-                    type: 'post',
-                    url: BigNew.category_delete,
-                    data: {
-                        id
-                    },
-                    success: function (backdata) {
-                        if (backdata.code == 204) {
-                            alert('删除成功!')
-                            //刷新数据
-                            getData();
+                if (confirm('你确定要删除吗？')) {
+                    //获取当前点击的元素的id
+                    var id = $(this).attr('data-id');
+                    //发送ajax请求,删除数据
+                    $.ajax({
+                        type: 'post',
+                        url: BigNew.category_delete,
+                        data: {
+                            id
+                        },
+                        success: function (backdata) {
+                            if (backdata.code == 204) {
+                                alert('删除成功!')
+                                //刷新数据
+                                getData();
+                            }
                         }
-                    }
-                })
+                    })
+                }
             })
         })
     </script>
