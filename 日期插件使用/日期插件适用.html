@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./日期插件/test/jeDate-test.css">
+    <link rel="stylesheet" href="./日期插件/skin/jedate.css">
+    <script src="./日期插件/src/jedate.js"></script>
+</head>
+
+<body>
+    <!-- <div class="jeitem"> -->
+        <label class="jelabel">点击图标</label>
+        <div class="jeinpbox">
+            <input type="text" class="jeinput" id="testico" placeholder="请选择日期">
+            <div class="icons jebtns" onclick="jeDate('#testico',{trigger:true,format: 'YYYY-MM-DD'})"></div>
+        </div>
+    <!-- </div> -->
+    <script>
+        jeDate("#testico", {
+            trigger: 'click', //默认也是click,写上去好理解  是否为内部触发事件，默认为内部触发事件
+            /* true : 不会弹出日期
+                false : 会弹出
+                'click' : 会弹出
+             */
+            format: "YYYY-MM-DD",
+            isTime: false, //是否开启时间选择
+            isinitVal: false, //初始化时间
+            minDate: "2014-09-19 00:00:00"
+        })
+    </script>
+</body>
+
+</html>

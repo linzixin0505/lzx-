@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script src="./wangEditor-3.1.1/release/wangEditor.min.js"></script>
+
+<body>
+    <button id="btn1">点我读取</button>
+    <button id="btn2">点我读取</button>
+    <div id="editor">
+        <p>欢迎使用支付宝</p>
+    </div>
+    <script>
+        var E = window.wangEditor
+        var editor = new E('#editor')
+        editor.create()
+
+        document.getElementById('btn1').addEventListener('click', function () {
+            // 读取 html
+            alert(editor.txt.html())
+        }, false)
+
+        document.getElementById('btn2').addEventListener('click', function () {
+            // 读取 text
+            alert(editor.txt.text())
+        }, false)
+    </script>
+</body>
+
+</html>
