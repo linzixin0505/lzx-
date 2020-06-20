@@ -17,7 +17,7 @@
         article_search:  baseURL + '/admin/article/search',//文章信息查询
         article_edit:    baseURL + '/admin/article/edit',//文章编辑
         article_delete:  baseURL + '/admin/article/delete',//文章删除
-        comment_list:    baseURL + '/admin/comment/search',//文章评论列表
+        comment_list:    baseURL + '/admin/comment/search',//所有文章评论列表
         comment_pass:    baseURL + '/admin/comment/pass',//文章评论通过
         comment_reject:  baseURL + '/admin/comment/reject',//文章评论不通过
         comment_delete:  baseURL + '/admin/comment/delete',//文章评论删除

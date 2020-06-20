@@ -13,7 +13,7 @@
 
 <body>
     <div class="header">
-        <a href="#" class="logo fl"><img src="images/logo.png" alt="logo"></a>
+        <a href="index.html" class="logo fl"><img src="images/logo.png" alt="logo"></a>
         <div class="search_form fl">
             <input type="text" class="search_txt" placeholder="黑洞照片">
             <button class="search_btn"><i class="fa fa-search"></i></button>
@@ -208,7 +208,228 @@
     <!-- 引入模板引擎js文件 -->
     <script src="./js/template-web.js"></script>
     <script src="./js/jquery-1.12.4.min.js"></script>
+    <!-- 准备一个新闻详情模板 -->
+    <script type="text/html" id="newtemp">
+        {{data.author}} 发布于 {{data.date}} &nbsp;&nbsp;&nbsp;分类: {{data.category}}&nbsp;&nbsp;&nbsp;阅读:
+        ({{data.read}})&nbsp;&nbsp;&nbsp;评论: ({{data.comments}})
+    </script>
+    <!-- 准备一个评论模板引擎 -->
+    <script type="text/html" id="pinluntemp">
+        {{each data v}}
+        <div class="comment_detail_list">
+            <div class="person_pic fl">{{v.author.substring(0,1)}}</div>
+            <div class="name_time fl"><b>{{v.author}}</b><span>{{v.date}}</span></div>
+            <div class="comment_text fl">
+                {{v.content}}
+            </div>
+        </div>
+        {{/each}}
+    </script>
+    <!-- 最新评论模板 -->
+    <script id="latestcomment_temp" type="text/html">
+        {{each data v}}
+        <li>
+            <span>{{v.author.substr(0,1)}}</span>
+            <b><em>{{v.author}}</em> {{v.date}}说:</b>
+            <strong>{{v.intro}}</strong>
+        </li>
+        {{/each}}
+    </script>
+    <!-- 五:焦点关注模板 -->
+    <script id="attention_temp" type="text/html">
+        {{each data v}}
+        <li><a href="./article.html?id={{v.id}}">{{v.intro}}</a></li>
+        {{/each}}
+    </script>
+    <!-- 六:所有的文章类别模板 -->
+    <script id="category_temp" type="text/html">
+        <li class="up"></li>
+        {{each data v}}
+        <li><a href="./list.html?id={{v.id}}">{{v.name}}</a></li>
+        {{/each}}
+    </script>
 
+    <!-- 六2:所有的文章类别模板2 -->
+    <script id="category_temp2" type="text/html">
+        {{each data v}}
+        <li><a href="./list.html?id={{v.id}}">{{v.name}}</a></li>
+        {{/each}}
+    </script>
+    <script>
+        //入口函数
+        $(function () {
+            // 一：新闻详情信息显示
+            //一进入页面,发送ajax请求,获取文章详细信息,渲染到页面
+            //首先需要获取文章id
+            var articleId = window.location.search.split('=')[1];
+            $.ajax({
+                type: 'get',
+                url: 'http://localhost:8080/api/v1/index/article',
+                data: {
+                    id: articleId
+                },
+                success: function (backdata) {
+                    if (backdata.code == 200) {
+                        // 顶部文章分类
+                        $('.breadcrumb>a:eq(1)').text(backdata.data.category)
+
+                        $('.article_title').text(backdata.data.title); //文章标题
+                        $('.article_con').html(backdata.data.content); //文章内容
+                        if (backdata.data.prev == null) {
+                            $('.article_links>a').eq(0).text('没有上一页');
+                        } else {
+                            $('.article_links>a').eq(0).text(backdata.data.prev.title).attr('href',
+                                './article.html?id=' + backdata.data.prev.id);
+                        }
+                        if (backdata.data.next == null) {
+                            $('.article_links>a').eq(1).text('没有下一页');
+                        } else {
+                            $('.article_links>a').eq(1).text(backdata.data.next.title).attr('href',
+                                './article.html?id=' + backdata.data.next.id);
+                        }
+                        // 通过模板引擎渲染
+                        var res = template('newtemp', backdata);
+                        $('.article_info').html(res);
+
+
+                    }
+                }
+            })
+
+            // 二：所有评论显示
+            // 根据id，获取对应文章的评论
+            //发送ajax请求，用模板引擎渲染
+            function getComment() {
+                $.ajax({
+                    type: 'get',
+                    url: 'http://localhost:8080/api/v1/index/get_comment',
+                    data: {
+                        articleId: articleId
+                    },
+                    success: function (backdata) {
+                        if (backdata.code == 200) {
+                            //模板引擎
+                            var res = template('pinluntemp', backdata);
+                            $('.comment_list_con').html(res);
+                            //评论条数
+                            $('.comment_count').text(backdata.data.length + '条评论');
+                        }
+                    }
+                })
+            }
+            getComment();
+
+            // 三：发表评论
+            // 给评论按钮注册点击事件
+            $('.comment_sub').on('click', function (e) {
+                e.preventDefault();
+                //获取输入框评论数据
+                var comment_name = $('.comment_name').val().trim();
+                var comment_input = $('.comment_input').val().trim();
+                if (comment_name == '' || comment_input == '') {
+                    alert('评论内容不能为空！')
+                    return;
+                }
+                //通过评论名称,内容以及id 发送ajax请求
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/api/v1/index/post_comment',
+                    data: {
+                        author: comment_name,
+                        content: comment_input,
+                        articleId: articleId
+                    },
+                    success: function (backdata) {
+                        if (backdata.code == 201) {
+                            alert('发表成功,待审核！');
+                            //清空输入框
+                            $('.comment_name').val("");
+                            $('.comment_input').val("");
+                            //重新发送ajax请求,刷新评论
+                            getComment();
+                        }
+                    }
+                })
+            })
+
+            // ---------------------补充---------------------------------
+
+            // 四：热门排行
+            $.ajax({
+                url: 'http://localhost:8080/api/v1/index/rank',
+                success: function (backData) {
+                    //console.log(backData);
+                    if (backData.code == 200) {
+                        //遍历数据
+                        //找到数据要渲染的标签,分别渲染上. 
+                        for (var i = 0; i < backData.data.length; i++) {
+                            $('.content_list>li').eq(i).children('a').text(backData.data[i].title);
+                            $('.content_list>li').eq(i).children('a').attr('href',
+                                './article.html?id=' + backData.data[i].id);
+                        }
+                    }
+                }
+            });
+
+            //五: 最新评论
+            $.ajax({
+                url: 'http://localhost:8080/api/v1/index/latest_comment',
+                success: function (backData) {
+                    var resHtml = template('latestcomment_temp', backData);
+                    $('.comment_list').html(resHtml);
+                }
+            });
+
+            //六: 焦点关注
+            $.ajax({
+                url: 'http://localhost:8080/api/v1/index/attention',
+                success: function (backData) {
+                    //console.log(backData);
+                    if (backData.code == 200) {
+                        var resHtml = template('attention_temp', backData);
+                        $('.guanzhu_list').html(resHtml);
+                    }
+                }
+            })
+            //七: 获取所有的文章类型
+            $.ajax({
+                url: 'http://localhost:8080/api/v1/index/category',
+                success: function (backData) {
+                    //console.log(backData);
+                    if (backData.code == 200) {
+                        var resHtml = template('category_temp', backData);
+                        $('.level_two').html(resHtml);;
+                        //七.获取所有的文章类型2
+                        var resHtml2 = template('category_temp2', backData);
+                        $('.left_menu.fl').html(resHtml2);
+                    }
+                }
+            });
+
+
+            //八:点击搜索按钮
+            $('.search_btn').on('click', function () {
+                var searchTxt = $('.search_txt').val().trim();
+                if (searchTxt == "") {
+                    alert("搜索关键字为空!");
+                    return;
+                } else if (isNaN(parseInt(searchTxt)) == false) {
+                    alert('搜索关键字为文本内容');
+                    return;
+                } else {
+                    window.location.href = "./list.html?searchTxt=" + searchTxt;
+
+                }
+            })
+            //优化：文本输入框设置键盘按下事件:回车
+            $('.search_txt').on('keydown', function (e) {
+                if (e.keyCode == 13) {
+                    $('.search_btn').click();
+                }
+            })
+
+        })
+    </script>
 </body>
 
 </html>

@@ -610,3 +610,10 @@ body{
     text-align:justify;
 }
 
+/* 分页样式 */
+.paging {
+    text-align: center;
+    width: 750px;
+    padding-top: 35px;
+}
+

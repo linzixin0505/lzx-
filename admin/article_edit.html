@@ -165,7 +165,7 @@
                 e.preventDefault();
                 var fd = new FormData(document.querySelector('form'));
                 //追加发布状态 , 发布内容
-                fd.append('content', editor.txt.text()); //发布内容
+                fd.append('content', editor.txt.html()); //发布内容
                 fd.append('state', '已发布'); //发布状态
                 fd.append('id',id) //文章id
                 //判断表单数据不能有空
@@ -187,9 +187,9 @@
                     success: function (backdata) {
                         if (backdata.code == 200) {
                             alert('修改成功')
-                            location.href = './article_list.html';
+                            // location.href = './article_list.html';
                             //发表文章高亮样式
-                            parent.$('.level02>li:eq(0)').click();
+                            parent.$('.level02>li:eq(0) a').click();//这里直接出发a标签点击事件也可以
                         }
                     }
                 })
