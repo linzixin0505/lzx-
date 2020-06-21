@@ -233,6 +233,7 @@
         <div class="common_news_list">
             <a href="./article.html?id={{v.id}}" class="list_pic"><img src="{{v.cover}}" alt=""></a>
             <h4><a href="./article.html?id={{v.id}}">{{v.title}} </a></h4>
+            <!-- @的作用 可以将html标签正常解析,并发挥作用,否则会当成文本 -->
             <p>{{@ v.intro}}</p>
             <div class="new_info">
                 <span>标签：{{v.category}}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<i class="fa fa-eye"></i>&nbsp;阅读(
@@ -376,6 +377,13 @@
                     return;
                 }
                 window.location.href = './list.html?search='+searchTxt;
+            })
+
+            //优化：文本输入框设置键盘按下事件:回车
+            $('.search_txt').on('keydown', function (e) {
+                if (e.keyCode == 13) {
+                    $('.search_btn').click();
+                }
             })
         })
     </script>

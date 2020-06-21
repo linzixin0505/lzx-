@@ -262,6 +262,11 @@
             //一进入页面,发送ajax请求,获取文章详细信息,渲染到页面
             //首先需要获取文章id
             var articleId = window.location.search.split('=')[1];
+            if(articleId == undefined){ //当直接通过连接进入时 id是undefined 则直接打回主页
+                window.location.href = './index.html';
+                return;
+            }
+            
             $.ajax({
                 type: 'get',
                 url: 'http://localhost:8080/api/v1/index/article',
@@ -269,6 +274,7 @@
                     id: articleId
                 },
                 success: function (backdata) {
+                    console.log(backdata);
                     if (backdata.code == 200) {
                         // 顶部文章分类
                         $('.breadcrumb>a:eq(1)').text(backdata.data.category)

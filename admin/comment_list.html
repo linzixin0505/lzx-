@@ -208,7 +208,7 @@
           url: BigNew.comment_list, //此接口作用就是返回所有数据,data数组里面存的是本页显示的数据
           data: {
             page: mypage, //当前页，为空返回第1页
-            perpage: 2 //每页显示条数，为空默认每页6条
+            perpage: 10 //每页显示条数，为空默认每页6条
           },
           success: function (backdata) {
             if (backdata.code == 200) {

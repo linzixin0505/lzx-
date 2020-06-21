@@ -58,40 +58,64 @@
     <div class="container-fluid">
         <div class="column_pannel" id="column_show"></div>
     </div>
-
+    <script>
+        //入口函数
+        $(function () {
+            $.ajax({
+                type: 'get',
+                url: 'http://localhost:8080/api/v1/admin/data/info',
+                success: function (backdata) {
+                    var arr = $('.spannel_list .spannel em'); //拿到对应数据数组
+                    arr.eq(0).text(backdata.totalArticle)
+                    arr.eq(1).text(backdata.dayArticle)
+                    arr.eq(2).text(backdata.totalComment)
+                    arr.eq(3).text(backdata.dayComment)
+                }
+            })
+        })
+    </script>
 
     <!-- 折线图 -->
     <script>
-        var json = '{"code":200,"msg":"获取成功","date":[{"date":"2019-05-20","count":23},{"date":"2019-05-21","count":19},{"date":"2019-05-22","count":29},{"date":"2019-05-23","count":24},{"date":"2019-05-24","count":28},{"date":"2019-05-25","count":28},{"date":"2019-05-26","count":19},{"date":"2019-05-27","count":25},{"date":"2019-05-28","count":25}]}';
-        var obj = JSON.parse(json);
-        loadEchars(obj);
+        //发送ajax请求,得到折线图的真实数据. 
+        $.ajax({
+            url: 'http://localhost:8080/api/v1/admin/data/article',
+            success: function (backData) {
+                loadEchars(backData);
+            }
+        });
 
         function loadEchars(obj) {
             // 基于准备好的dom，初始化echarts实例
             var myChart = echarts.init(document.getElementById('curve_show'));
 
-            var data = [];
-            var date = [];
+            var data = []; //y轴数据
+            var date = []; //x轴数据
             for (var i = 0; i < obj.date.length; i++) {
                 data.push(obj.date[i].count);
                 date.push(obj.date[i].date);
             }
-
             option = {
+                // 提示组件
                 tooltip: {
                     trigger: 'axis',
+                    //pt当前鼠标位置
+                    //pt[0] 鼠标x轴位置 
+                    //pt[1] 鼠标y轴位置
                     position: function (pt) {
-                        return [pt[0], '10%'];
+                        return [pt[0] + 10, pt[1] + 10];
                     }
                 },
+                //标题
                 title: {
                     left: 'center',
                     text: '月新增文章数',
                 },
-
+                //x轴
                 xAxis: {
                     name: '日',
                     type: 'category',
+                    // 两边留白策略,true就是需要留白
                     boundaryGap: false,
                     data: date
                 },
@@ -99,14 +123,19 @@
                     data: ['新增文章'],
                     top: '40'
                 },
+                // 工具栏
                 toolbox: {
                     show: true,
                     feature: {
                         dataZoom: {
                             yAxisIndex: 'none'
                         },
-                        dataView: { readOnly: false },
-                        magicType: { type: ['line', 'bar'] },
+                        dataView: {
+                            readOnly: false
+                        },
+                        magicType: {
+                            type: ['line', 'bar']
+                        },
                         restore: {},
                         saveAsImage: {}
                     },
@@ -114,20 +143,23 @@
                 },
                 yAxis: {
                     type: 'value',
-                    boundaryGap: [0, '100%']
+                    boundaryGap: [0, '100%'],
+                    //y轴能够显示的最大值
+                    max: 40
                 },
-                series: [
-                    {
-                        name: '新增文章',
-                        type: 'line',
-                        smooth: true,
-                        // symbol: 'none',
-                        sampling: 'average',
-                        itemStyle: {
-                            color: '#f80'
-                        },
-                        areaStyle: {
-                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                series: [{
+                    name: '新增文章',
+                    type: 'line',
+                    // 是否平滑
+                    smooth: true,
+                    // 小圆点,注释掉就是默认的
+                    // symbol: 'circle',
+                    sampling: 'average',
+                    itemStyle: {
+                        color: '#f80'
+                    },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
                                 offset: 0,
                                 color: 'rgba(255,136,0,0.39)'
                             }, {
@@ -137,12 +169,13 @@
                             {
                                 offset: 1,
                                 color: 'rgba(255,222,0,0.00)'
-                            }])
-                        },
-                        data: data
-                    }
-                ],
-            }
+                            }
+                        ])
+                    },
+                    data: data
+                }],
+            };
+
             // 使用刚指定的配置项和数据显示图表。
             myChart.setOption(option);
         }
@@ -150,27 +183,50 @@
 
     <!-- 环形图 -->
     <script>
-        // 基于准备好的dom，初始化echarts实例
-        var myChart1 = echarts.init(document.getElementById('pie_show'));
+        //发送ajax请求,得到各类型文章数量统计的数据
+        $.ajax({
+            type: 'get',
+            url: 'http://localhost:8080/api/v1/admin/data/category',
+            success: function (backdata) {
+                if (backdata.code == 200) {
+                    loadEchars2(backdata);
+                }
+            }
+        })
 
-        option1 = {
-            title: {
-                left: 'center',
-                text: '分类文章数量比',
-            },
-            tooltip: {
-                trigger: 'item',
-                formatter: "{a} <br/>{b}: {c} ({d}%)"
-            },
-            legend: {
-                orient: 'horizontal',
-                x: 'center',
-                data: ['爱生活', '趣美味', '爱旅行', '爱电影', '爱游泳'],
-                top: 30
-            },
-            color: ['#5885e8', '#13cfd5', '#00ce68', '#ff9565', '#20ff19'],
-            series: [
-                {
+        function loadEchars2(obj) {
+            var classArr = [] //申明数组存储分类
+            // for (var i = 0; i < obj.date.length; i++) {
+            //     classArr.push(obj.date[i].name);//文章分类
+            // }
+            
+            //思路:将js数组转json，然后将字符串所有的articles改为value,再用到下面
+            // console.log(obj.date);
+            var json = JSON.stringify(obj.date);
+            var newJson = json.replace(/articles/g,'value')//正则匹配全局替换 将articles 替换 value
+            var data2 = JSON.parse(newJson);
+           
+
+            // 基于准备好的dom，初始化echarts实例
+            var myChart1 = echarts.init(document.getElementById('pie_show'));
+
+            option1 = {
+                title: {
+                    left: 'center',
+                    text: '分类文章数量比',
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: "{a} <br/>{b}: {c} ({d}%)"
+                },
+                legend: {
+                    orient: 'horizontal',
+                    x: 'center',
+                    data: classArr,
+                    top: 30
+                },
+                color: ['#5885e8', '#13cfd5', '#00ce68', '#ff9565', '#20ff19','red'],
+                series: [{
                     name: '分类名称',
                     type: 'pie',
                     radius: ['50%', '70%'],
@@ -184,21 +240,16 @@
                             }
                         }
                     },
-                    data: [
-                        { value: 335, name: '爱生活' },
-                        { value: 310, name: '趣美味' },
-                        { value: 234, name: '爱旅行' },
-                        { value: 135, name: '爱电影' },
-                        { value: 548, name: '爱游泳' }
-                    ]
-                }
-            ]
-        };
-        // 使用刚指定的配置项和数据显示图表。
-        myChart1.setOption(option1);
+                    data: data2
+                }]
+            };
+            // 使用刚指定的配置项和数据显示图表。
+            myChart1.setOption(option1);
+        }
     </script>
     <!-- 柱状图 -->
     <script>
+
         // 基于准备好的dom，初始化echarts实例
         var myChart2 = echarts.init(document.getElementById('column_show'));
 
@@ -209,14 +260,14 @@
             },
             tooltip: {
                 trigger: 'axis',
-                axisPointer: {            // 坐标轴指示器，坐标轴触发有效
-                    type: 'line'        // 默认为直线，可选为：'line' | 'shadow'
+                axisPointer: { // 坐标轴指示器，坐标轴触发有效
+                    type: 'line' // 默认为直线，可选为：'line' | 'shadow'
                 },
-                
+
             },
             legend: {
                 data: ['爱生活', '趣美味', '爱旅行', '爱电影', '爱游泳'],
-                top:30
+                top: 30
             },
             grid: {
                 left: '3%',
@@ -224,20 +275,15 @@
                 bottom: '3%',
                 containLabel: true
             },
-            xAxis: [
-                {
-                    type: 'category',
-                    data: ['一月', '二月', '三月', '四月']
-                }
-            ],
-            yAxis: [
-                {
-                    type: 'value'
-                }
-            ],
+            xAxis: [{
+                type: 'category',
+                data: ['一月', '二月', '三月', '四月']
+            }],
+            yAxis: [{
+                type: 'value'
+            }],
             color: ['#5885e8', '#13cfd5', '#00ce68', '#ff9565', '#20ff19'],
-            series: [
-                {
+            series: [{
                     name: '爱生活',
                     type: 'bar',
                     data: [320, 332, 301, 334]
@@ -265,8 +311,6 @@
 
             ]
         };
-
-
         // 使用刚指定的配置项和数据显示图表。
         myChart2.setOption(option2);
     </script>
